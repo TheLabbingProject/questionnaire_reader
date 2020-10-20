@@ -1,0 +1,17 @@
+# Visual Studio Code Settings
+.vscode
+
+# Python cache
+**/__pycache__/**
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+
+# Virtual Environment
+venv
+
+# Environment variables
+**/.env
+
+# Artifacts
+*.csv
