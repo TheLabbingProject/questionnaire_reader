@@ -1,6 +1,9 @@
 # Visual Studio Code Settings
 .vscode
 
+# Distribution directories and files
+*.egg-info
+
 # Python cache
 **/__pycache__/**
 
