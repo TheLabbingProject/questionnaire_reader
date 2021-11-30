@@ -1,11 +1,12 @@
+from typing import Tuple
+
 import matplotlib.pyplot as plt
 import pandas as pd
-
 from pandas.plotting import table
-from typing import Tuple
+
 from questionnaire_reader.bfi import calculate_bfi
 from questionnaire_reader.defaults import COLUMNS, NAMES, REPLACE_DICT
-from questionnaire_reader.psqi import calculate_psqi_scores, PsqiQuestions
+from questionnaire_reader.psqi import PsqiQuestions, calculate_psqi_scores
 from questionnaire_reader.utils.freedman_diaconis import freedman_diaconis
 
 DEFAULT_COLORS = plt.rcParams["axes.prop_cycle"].by_key()["color"] + [
@@ -31,7 +32,12 @@ class QuestionnaireReader:
 
     def read_data(self) -> pd.DataFrame:
         return pd.read_csv(
-            self.path, header=0, index_col=1, parse_dates=True, names=NAMES,
+            self.path,
+            header=0,
+            index_col=1,
+            parse_dates=True,
+            names=NAMES,
+            encoding="unicode_escape",
         )
 
     def get_column_name(self, key: str) -> str:

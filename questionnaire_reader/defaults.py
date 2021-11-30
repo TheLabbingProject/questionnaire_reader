@@ -244,6 +244,10 @@ NAMES = (
     "Political Orientation",
     "Economical Orientation",
     "Belief in Equal Rights",
+    "SHS Q1",
+    "SHS Q2",
+    "SHS Q3",
+    "SHS Q4",
 )
 REPLACE_DICT = {
     "Dominant Hand": {
