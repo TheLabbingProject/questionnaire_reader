@@ -32,7 +32,12 @@ class QuestionnaireReader:
 
     def read_data(self) -> pd.DataFrame:
         return pd.read_csv(
-            self.path, header=0, index_col=1, parse_dates=True, names=NAMES,
+            self.path,
+            header=0,
+            index_col=1,
+            parse_dates=True,
+            names=NAMES,
+            encoding="utf-8",
         )
 
     def get_column_name(self, key: str) -> str:
