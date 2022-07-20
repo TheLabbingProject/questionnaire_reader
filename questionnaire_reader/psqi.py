@@ -1,7 +1,7 @@
-import pandas as pd
-
 from datetime import datetime
 from enum import Enum
+
+import pandas as pd
 
 
 class PsqiQuestions(Enum):
@@ -117,8 +117,8 @@ REPLACE_DICT = {
 
 
 def convert_df(psqi_df: pd.DataFrame):
-    psqi_df.replace(REPLACE_DICT, inplace=True)
-    for i, ind_name in enumerate(psqi_df.index):
+    psqi_df = psqi_df.replace(REPLACE_DICT)
+    for ind_name in psqi_df.index:
         q2 = psqi_df.loc[ind_name, "Q_2"]
         q4 = psqi_df.loc[ind_name, "Q_4"]
         if (q2 <= 15).any():

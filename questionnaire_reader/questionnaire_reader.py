@@ -1,7 +1,10 @@
+import os
+from tkinter import E
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from dotenv import load_dotenv
 from pandas.plotting import table
 
 from questionnaire_reader.bfi import calculate_bfi
@@ -15,15 +18,18 @@ DEFAULT_COLORS = plt.rcParams["axes.prop_cycle"].by_key()["color"] + [
     "hotpink",
     "darkviolet",
 ]
-
+load_dotenv()
 
 class QuestionnaireReader:
     def __init__(
         self,
-        path: str,
+        path: str = None,
         columns: list = COLUMNS,
         replace_dict: dict = REPLACE_DICT,
     ):
+        path = os.getenv("QUESTIONNAIRE_PATH") if path is None else path
+        if path is None:
+            raise ValueError("Path must be provided")
         self.path = path
         self.columns = columns
         self.replace_dict = replace_dict
@@ -31,14 +37,15 @@ class QuestionnaireReader:
         self.data = self.clean_data(self.raw)
 
     def read_data(self) -> pd.DataFrame:
-        return pd.read_csv(
+        df = pd.read_excel(
             self.path,
             header=0,
-            index_col=1,
+            index_col=None,
             parse_dates=True,
-            names=NAMES,
-            encoding="utf-8",
         )
+        df = df.drop([col for col in df.columns if col.startswith("Unnamed")], axis=1)
+        df.columns = NAMES
+        return df
 
     def get_column_name(self, key: str) -> str:
         default = key.title().replace("_", " ")
@@ -53,10 +60,18 @@ class QuestionnaireReader:
         clean = self.convert_psqi_responses_to_results(clean)
         return clean
 
+    def fix_height_value(self, value: str) -> float:
+        try:
+            value = float(value)
+        except ValueError:
+            pass
+        else:
+            return value * 100 if value < 3 else value
+
     def fix_height(self, df: pd.DataFrame) -> None:
         height_col = self.get_column_name("height")
         height = df[height_col]
-        df[height_col] = height.apply(lambda x: x * 100 if x < 3 else x)
+        df[height_col] = height.apply(self.fix_height_value)
 
     def fix_attention_deficit(self, df: pd.DataFrame) -> None:
         df["Attention Deficit Disorder"] = df[
@@ -98,7 +113,7 @@ class QuestionnaireReader:
         return pd.concat([df, bfi_scores], axis=1)
 
     def get_psqi_responses(self, df: pd.DataFrame) -> pd.DataFrame:
-        psqi = df.iloc[:, 36:62].copy()
+        psqi = df.iloc[:, 43:69].copy()
         column_names = []
         for i, col in enumerate(psqi.columns):
             question = f"PSQI_{i}"
@@ -112,7 +127,7 @@ class QuestionnaireReader:
 
     def convert_psqi_responses_to_results(self, df: pd.DataFrame) -> None:
         psqi_scores = self.get_psqi_scores(df)
-        df.drop(labels=df.columns[36:62], axis=1, inplace=True)
+        df.drop(labels=df.columns[43:69], axis=1, inplace=True)
         return pd.concat([df, psqi_scores], axis=1)
 
     def calculate_bmi(self, df: pd.DataFrame) -> None:
