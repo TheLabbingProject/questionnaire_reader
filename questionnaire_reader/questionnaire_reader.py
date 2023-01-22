@@ -1,15 +1,22 @@
+from os import sched_setscheduler
 import os
 from tkinter import E
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from pandas.core.frame import DataFrame
 from dotenv import load_dotenv
 from pandas.plotting import table
 
 from questionnaire_reader.bfi import calculate_bfi
 from questionnaire_reader.defaults import COLUMNS, NAMES, REPLACE_DICT
 from questionnaire_reader.psqi import PsqiQuestions, calculate_psqi_scores
+from questionnaire_reader.shs import (
+    SHS_NORMAL_SCORING,
+    SHS_REVERSED_SCORING,
+    calculate_shs,
+)
 from questionnaire_reader.utils.freedman_diaconis import freedman_diaconis
 
 DEFAULT_COLORS = plt.rcParams["axes.prop_cycle"].by_key()["color"] + [
@@ -58,6 +65,7 @@ class QuestionnaireReader:
         self.fix_attention_deficit(clean)
         clean = self.convert_bfi_responses_to_results(clean)
         clean = self.convert_psqi_responses_to_results(clean)
+        clean = self.convert_shs_responses_to_results(clean)
         return clean
 
     def fix_height_value(self, value: str) -> float:
@@ -129,6 +137,27 @@ class QuestionnaireReader:
         psqi_scores = self.get_psqi_scores(df)
         df.drop(labels=df.columns[43:69], axis=1, inplace=True)
         return pd.concat([df, psqi_scores], axis=1)
+
+    def convert_shs_responses_to_results(
+        self, df: pd.DataFrame
+    ) -> pd.DataFrame:
+        """
+        Calculate SHS scores according to subjects' responses
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame the contains the SHS-relevant columns
+
+        Returns
+        -------
+        pd.DataFrame
+            A single column containing subjects' caclulated SHS score
+        """
+        shs_scores = calculate_shs(df)
+        df = df.drop(SHS_REVERSED_SCORING + SHS_NORMAL_SCORING, axis=1).copy()
+        df["SHS"] = shs_scores
+        return df
 
     def calculate_bmi(self, df: pd.DataFrame) -> None:
         return df["Weight (kg)"] / ((df["Height (cm)"] / 100) ** 2)
